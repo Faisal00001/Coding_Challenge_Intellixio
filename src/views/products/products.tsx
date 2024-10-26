@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Product } from "@/types";
 import { ProductModal } from "@/views/products/productModal/productModal";
 import { BackToHome } from "@/components/backToHome/backToHome";
@@ -11,6 +11,7 @@ import { PRODUCTS_DATA } from "@/data/productsData";
 
 export const Products: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   const {
     currentPage,
     totalPages,
@@ -18,12 +19,29 @@ export const Products: React.FC = () => {
     handlePageChange,
   } = usePagination({ items: PRODUCTS_DATA, itemsPerPage: 5 });
 
+  // Effect to restore selected product from localStorage
+  useEffect(() => {
+    if (paginatedProducts.length > 0) {
+      const storedId = localStorage.getItem("selectedProduct");
+      if (storedId) {
+        const selectedItem = paginatedProducts.find(
+          (product) => product.id == storedId
+        );
+        if (selectedItem) {
+          setSelectedProduct(selectedItem);
+        }
+      }
+    }
+  }, [paginatedProducts]);
+
   const handleOpenModal = useCallback((product: Product) => {
     setSelectedProduct(product);
+    localStorage.setItem("selectedProduct", product.id.toString()); // Store selected product ID
   }, []);
 
   const handleCloseModal = useCallback(() => {
     setSelectedProduct(null);
+    localStorage.removeItem("selectedProduct"); // Clear selected product ID
   }, []);
 
   return (
